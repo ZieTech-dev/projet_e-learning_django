@@ -41,6 +41,9 @@ INSTALLED_APPS = [
     'education.apps.EducationConfig',
 
     'account.apps.AccountConfig',
+    'Comptabilite.apps.ComptabiliteConfig',
+    'ckeditor',
+    'ckeditor_uploader',
 ]
 
 MIDDLEWARE = [
@@ -125,3 +128,19 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+CKEDITOR_CONFIGS = {
+    'default': {
+        'toolbar': 'full',
+        'height': 300,
+        'width': '100%',
+        'extraPlugins': ','.join([
+            'uploadimage',  
+        ]),
+    },
+}
+
+CKEDITOR_UPLOAD_PATH = "uploads/"
+
+AUTH_USER_MODEL = 'account.CustomUser'

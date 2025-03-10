@@ -21,7 +21,7 @@ class CustomUser(AbstractUser):
     code_postal = models.CharField(blank=True, max_length=20)
     pays = models.CharField(blank=True, max_length=100)
     
-    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='null')
+    role = models.CharField(max_length=30, choices=ROLE_CHOICES, default='null')
 
     def save(self, *args, **kwargs):
         if self.rue or self.ville or self.pays:
@@ -59,4 +59,40 @@ class Enseignant(CustomUser):
 
     def __str__(self):
         return f"Enseignant: {self.username}"
+
+
+class Comptable(CustomUser):
+    matricule = models.CharField(blank=True, max_length=100)
+
+    def __str__(self):
+        return f"Comptable: {self.username}"
+
+
+class Administrateur(CustomUser):
+    matricule = models.CharField(blank=True, max_length=100)
+
+    def save(self, *args, **kwargs):
+        if not self.pk:  
+            self.is_superuser = True  
+            self.is_staff = True  
+            self.is_active = True  
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"Administrateur: {self.username}"
+
+
+
+class ResponsableScolarite(CustomUser):
+    matricule = models.CharField(blank=True, max_length=100)
+
+    def save(self, *args, **kwargs):
+        if not self.pk:  
+            self.is_superuser = True  
+            self.is_staff = True  
+            self.is_active = True  
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"Administrateur: {self.username}"
 
