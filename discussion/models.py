@@ -54,3 +54,15 @@ class ForumCours(Forum):
     pass
 
 
+class Groupe(models.Model):
+    class Meta:
+        verbose_name="Groupe"
+        verbose_name_plural="Groupes"  
+    nomGroupe = models.CharField(max_length=200)
+    typeGroupe = models.CharField(max_length=200)
+    auteur_id = models.ForeignKey(User, on_delete=models.CASCADE, related_name="Groupe_Auteur_id")
+    participants_id = models.ManyToManyField("account.Enseignant", related_name="Participant_Groupe_ids")
+
+    statut = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    last_updated_at = models.DateTimeField(auto_now=True)
