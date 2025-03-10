@@ -38,6 +38,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'discussion.apps.DiscussionConfig'
+    'education.apps.EducationConfig',
+
 ]
 
 MIDDLEWARE = [
