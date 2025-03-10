@@ -15,6 +15,10 @@ class Message(models.Model):
     dateEnvoi = models.DateTimeField(auto_now_add=True)
     auteur_id = models.ForeignKey(User, on_delete=models.CASCADE, related_name="auteur_Message_ids")
 
+    statut = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    last_updated_at = models.DateTimeField(auto_now=True)
+
 
 class Forum(models.Model):
     class Meta:
@@ -25,6 +29,10 @@ class Forum(models.Model):
     description = models.TextField()
     messages = models.ForeignKey("discussion.Message", on_delete=models.CASCADE, related_name="Message_Forum_id")
     participants_id = models.ManyToManyField(User,related_name="Participant_Forum_ids")
+
+    statut = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    last_updated_at = models.DateTimeField(auto_now=True)
 
 
 class Chat (models.Model):
@@ -37,6 +45,12 @@ class Chat (models.Model):
     messages = models.ForeignKey("discussion.Message", on_delete=models.CASCADE, related_name="Message_Chat_id")
     participants_id = models.ManyToManyField(User, related_name="Participant_Chat_ids")
 
+    statut = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    last_updated_at = models.DateTimeField(auto_now=True)
+
 
 class ForumCours(Forum):
     pass
+
+
