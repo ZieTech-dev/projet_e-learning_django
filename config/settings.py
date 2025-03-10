@@ -44,6 +44,8 @@ INSTALLED_APPS = [
     'Comptabilite.apps.ComptabiliteConfig',
     'ckeditor',
     'ckeditor_uploader',
+    'discussion.apps.DiscussionConfig',
+    
 ]
 
 MIDDLEWARE = [
