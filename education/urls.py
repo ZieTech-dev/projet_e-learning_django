@@ -50,4 +50,8 @@ urlpatterns = [
     path('quiz/<int:quiz_id>/attempts/', views.quiz_attempts, name='quiz_attempts'),
     path('invoice/<int:invoice_id>/', views.invoice_detail, name='invoice_detail'),
     path('payments/', views.payments, name='payments'),
+    path('', views.index, name='index'),
+    path('gestion_scolarite', views.gestion_scolarite, name='gestion_scolarite'),
+
+
 ]

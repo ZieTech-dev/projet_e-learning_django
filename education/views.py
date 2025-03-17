@@ -459,3 +459,10 @@ def dashboard(request):
         'upcoming_invoices': upcoming_invoices,
         'recent_notes': recent_notes
     })
+# Create your views here.
+
+def index(request):
+    return render(request, 'index.html')
+
+def gestion_scolarite(request): 
+    return render(request, 'gestion_scolarite.html')
