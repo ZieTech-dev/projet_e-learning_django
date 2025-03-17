@@ -228,18 +228,16 @@ def quiz_detail(request, quiz_id):
     quiz = get_object_or_404(Quiz, id=quiz_id)
     student = get_object_or_404(Student, user=request.user)
 
-    # if QuizAttempt.objects.filter(student=student, quiz=quiz).exists():
-    #     messages.warning(request, "Vous avez déjà terminé ce quiz.")
-    #     # Redirigez vers la page des résultats du quiz
-    #     attempt = QuizAttempt.objects.filter(student=student, quiz=quiz).first()
-    #     return redirect('quiz_result', attempt_id=attempt.id)
+    if QuizAttempt.objects.filter(student=student, quiz=quiz, completed_at__isnull=False).exists():
+        messages.warning(request, "Vous avez déjà terminé ce quiz.")
+        attempt = QuizAttempt.objects.filter(student=student, quiz=quiz, completed_at__isnull=False).first()
+        return redirect('quiz_result', attempt_id=attempt.id)
 
     # Vérifier si une tentative de quiz est en cours
     attempt = QuizAttempt.objects.filter(student=student, quiz=quiz, completed_at__isnull=True).first()
 
     if request.method == 'POST':
         if not attempt:
-            # Créer une nouvelle tentative de quiz si aucune n'est en cours
             attempt = QuizAttempt.objects.create(student=student, quiz=quiz)
 
         # Traiter les réponses soumises
@@ -253,20 +251,14 @@ def quiz_detail(request, quiz_id):
                     selected_choice=selected_choice
                 )
 
-        # Si l'utilisateur soumet le quiz, calculer le score et marquer comme terminé
+        # Vérifier si l'utilisateur soumet le quiz
         if 'submit_quiz' in request.POST:
-            score = 0
-            for answer in attempt.student_answers.all():
-                if answer.selected_choice.is_correct:
-                    score += 1
-
-            # Calculer le score (en pourcentage)
+            score = sum(1 for answer in attempt.student_answers.all() if answer.selected_choice.is_correct)
             total_questions = quiz.questions.count()
             attempt.score = (score / total_questions) * 100 if total_questions > 0 else 0
             attempt.completed_at = timezone.now()
             attempt.save()
 
-            # Enregistrer la note dans Evaluation
             Evaluation.objects.create(
                 student=request.user,
                 quiz=quiz,
@@ -275,26 +267,16 @@ def quiz_detail(request, quiz_id):
 
             messages.success(request, "Quiz terminé avec succès !")
             return redirect('quiz_result', attempt_id=attempt.id)
-    else:
-        messages.error(request, "Méthode non autorisée.")
-        return redirect('quiz_detail', quiz_id=quiz.id)
 
-    # Si une tentative est en cours, afficher les questions et les choix
-    if attempt:
-        user_answers = {answer.question.id: answer.selected_choice.id for answer in attempt.student_answers.all()}
-        return render(request, 'quiz_details.html', {
-            'quiz': quiz,
-            'attempt': attempt,
-            'user_answers': user_answers,
-            'started': True,
-        })
-    else:
-        # Si aucune tentative n'est en cours, afficher les instructions
-        return render(request, 'quiz_details.html', {
-            'quiz': quiz,
-            'attempt': None,
-            'started': False,
-        })
+    # Gestion des requêtes GET (affichage du quiz)
+    user_answers = {answer.question.id: answer.selected_choice.id for answer in attempt.student_answers.all()} if attempt else {}
+
+    return render(request, 'quiz_details.html', {
+        'quiz': quiz,
+        'attempt': attempt,
+        'user_answers': user_answers,
+        'started': bool(attempt),
+    })
 
 
 
