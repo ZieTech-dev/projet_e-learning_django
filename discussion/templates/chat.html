@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+    <div class="container p-0">
+        <h1 class="h3 mb-3">Messages</h1>
+        <div class="card">
+            <div class="row g-0">
+                <!-- Left Column: Contact List -->
+                <div class="col-18 col-lg-12 col-xl-8 border-center">
+                    <div class="px-4 d-none d-md-block">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-grow-1">
+                                <input type="text" class="form-control my-3" placeholder="Search...">
+                            </div>
+                        </div>
+                    </div>
+
+					{% if forums %}
+						{% for forum in forums %}
+							<a href="{% url 'forum_detail' forum.id %}" class="list-group-item list-group-item-action">
+								<div class="d-flex justify-content-between">
+									<div class="d-flex align-items-start">
+										<img src="https://bootdey.com/img/Content/avatar/avatar5.png" class="rounded-circle mr-2" alt="Forum Avatar" width="40" height="40">
+										<div class="flex-grow-1 ml-3">
+											<strong>{{ forum.titre }}</strong>
+											<p class="small">{{ forum.description|slice:":100" }}...</p>
+										</div>
+									</div>
+									
+								</div>
+							</a>
+						{% endfor %}
+					{% else %}
+						<div class="alert alert-warning" role="alert">
+							Aucun forum disponible pour le moment.
+						</div>
+					{% endif %}
+
+		
+					<!-- Affichage des Chats -->
+					{% if chats %}
+					{% for chat in chats %}
+						<a href="{% url 'chat_detail' chat.id %}" class="list-group-item list-group-item-action">
+							<div class="d-flex justify-content-between">
+								<div class="d-flex align-items-start">
+									<img src="https://bootdey.com/img/Content/avatar/avatar5.png" class="rounded-circle mr-2" alt="Chat Avatar" width="40" height="40">
+									<div class="flex-grow-1 ml-3">
+										<strong>{{ chat.nomChat }}</strong>
+										<p class="small">{{ chat.typeChat }}</p>
+									</div>
+								</div>
+								
+							</div>
+						</a>
+					{% endfor %}
+
+					{% else %}
+					<div class="alert alert-warning" role="alert">
+						Aucun chat disponible pour le moment.
+					</div>
+					{% endif %}
+								
+					
+					<!-- Affichage des Groupes -->
+					{% if groupes %}
+					{% for groupe in groupes %}
+						<a href="{% url 'groupe_detail' groupe.id %}" class="list-group-item list-group-item-action">
+							<div class="d-flex justify-content-between">
+								<div class="d-flex align-items-start">
+									<img src="https://bootdey.com/img/Content/avatar/avatar5.png" class="rounded-circle mr-2" alt="Groupe Avatar" width="40" height="40">
+									<div class="flex-grow-1 ml-3">
+										<strong>{{ groupe.nomGroupe }}</strong>
+										<p class="small">{{ groupe.typeGroupe }}</p>
+									</div>
+								</div>
+								
+							</div>
+						</a>
+					{% endfor %}
+					{% else %}
+					<div class="alert alert-warning" role="alert">
+						Aucun groupe disponible pour le moment.
+					</div>
+					{% endif %}
+			
+					
+
+                    <hr class="d-block d-lg-none mt-1 mb-0">
+                </div>
+                
+        
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

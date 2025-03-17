@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+    <div class="container p-0">
+        <h1 class="h3 mb-3">Messages</h1>
+        <div class="card">
+            <div class="row g-0">
+                <!-- Left Column: Contact List -->
+                <div class="col-10 col-lg-5 col-xl-3 border-right">
+                    <div class="px-4 d-none d-md-block">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-grow-1">
+                                <input type="text" class="form-control my-3" placeholder="Search...">
+                            </div>
+                        </div>
+                    </div>
+
+					{% if forums %}
+						{% for forum in forums %}
+							<a href="{% url 'forum_detail' forum.id %}" class="list-group-item list-group-item-action">
+								<div class="d-flex justify-content-between">
+									<div class="d-flex align-items-start">
+										<img src="https://bootdey.com/img/Content/avatar/avatar5.png" class="rounded-circle mr-2" alt="Forum Avatar" width="40" height="40">
+										<div class="flex-grow-1 ml-3">
+											<strong>{{ forum.titre }}</strong>
+											<p class="small">{{ forum.description|slice:":100" }}...</p>
+										</div>
+									</div>
+									
+								</div>
+							</a>
+						{% endfor %}
+					{% else %}
+						<div class="alert alert-warning" role="alert">
+							Aucun forum disponible pour le moment.
+						</div>
+					{% endif %}
+
+		
+					<!-- Affichage des Chats -->
+					{% if chats %}
+					{% for chat in chats %}
+						<a href="{% url 'chat_detail' chat.id %}" class="list-group-item list-group-item-action">
+							<div class="d-flex justify-content-between">
+								<div class="d-flex align-items-start">
+									<img src="https://bootdey.com/img/Content/avatar/avatar5.png" class="rounded-circle mr-2" alt="Chat Avatar" width="40" height="40">
+									<div class="flex-grow-1 ml-3">
+										<strong>{{ chat.nomChat }}</strong>
+										<p class="small">{{ chat.typeChat }}</p>
+									</div>
+								</div>
+								
+							</div>
+						</a>
+					{% endfor %}
+
+					{% else %}
+					<div class="alert alert-warning" role="alert">
+						Aucun chat disponible pour le moment.
+					</div>
+					{% endif %}
+								
+					
+					<!-- Affichage des Groupes -->
+					{% if groupes %}
+					{% for groupe in groupes %}
+						<a href="{% url 'groupe_detail' groupe.id %}" class="list-group-item list-group-item-action">
+							<div class="d-flex justify-content-between">
+								<div class="d-flex align-items-start">
+									<img src="https://bootdey.com/img/Content/avatar/avatar5.png" class="rounded-circle mr-2" alt="Groupe Avatar" width="40" height="40">
+									<div class="flex-grow-1 ml-3">
+										<strong>{{ groupe.nomGroupe }}</strong>
+										<p class="small">{{ groupe.typeGroupe }}</p>
+									</div>
+								</div>
+								
+							</div>
+						</a>
+					{% endfor %}
+					{% else %}
+					<div class="alert alert-warning" role="alert">
+						Aucun groupe disponible pour le moment.
+					</div>
+					{% endif %}
+			
+					
+
+                    <hr class="d-block d-lg-none mt-1 mb-0">
+                </div>
+                
+                <!-- Right Column: Chat Messages -->
+                <div class="col-12 col-lg-7 col-xl-9">
+                    <div class="py-2 px-4 border-bottom d-none d-lg-block">
+                        <div class="d-flex align-items-center py-1">
+                            <div class="position-relative">
+                                <img src="https://bootdey.com/img/Content/avatar/avatar3.png" class="rounded-circle mr-1" alt="Sharon Lessman" width="40" height="40">
+                            </div>
+                            <div class="flex-grow-1 pl-3">
+                                <strong>{{ forum.titre }}</strong>
+                                <div class="text-muted small">
+                                {% for participant in participants %}
+                                <em><li>{{ participant.username }}</li></em>
+                                {% endfor %}
+                                </div>
+                            </div>
+                            <div>
+                                <button class="btn btn-primary btn-lg mr-1 px-3">Call</button>
+                                <button class="btn btn-info btn-lg mr-1 px-3">Video</button>
+                                <button class="btn btn-light border btn-lg px-3">More</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Chat Messages Area -->
+                    <div class="position-relative">
+                        <div class="chat-messages p-4">
+                            <!-- Messages with sender and receiver -->           
+                               
+                            {% for message in messages %}       
+                                <div class="chat-message-right pb-4">
+                                    <div>
+                                        <div class="text-muted small text-nowrap mt-2">{{ message.dateEnvoi }}</div>
+                                    </div>
+                                    <div class="flex-shrink-1 bg-light rounded py-2 px-3 mr-3">
+                                        <div class="font-weight-bold mb-1">{{ message.auteur_id.username }}</div>
+                                        {{ message.contenu }}
+                                    </div>
+                                </div>
+                            {% empty %}
+                                <li>Aucun message dans ce chat.</li>
+                            {% endfor %}
+                            <!-- Repeat for more messages -->
+                        </div>
+                    </div>
+
+                    <!-- Input Area -->
+                    <!-- Input Area -->
+                    <div class="flex-grow-0 py-3 px-4 border-top">
+                        <form method="POST" action="{% url 'send_forum_message' forum.id %}">
+                            {% csrf_token %}
+                            <div class="position-relative d-flex">
+                                <input type="text" name="contenu" class="form-control form-control-lg me-2" placeholder="Type your message..." required>
+                                <button type="submit" class="btn btn-primary">Envoyer</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
