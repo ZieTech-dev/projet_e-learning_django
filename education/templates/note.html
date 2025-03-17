@@ -1,0 +1,172 @@
+{% extends 'base.html' %}
+
+{% block title %}Mes Notes | EduSystem{% endblock %}
+
+{% block content %}
+<div class="page-header d-flex justify-content-between align-items-center">
+    <h1><i class="fas fa-sticky-note me-2"></i>Mes Notes</h1>
+   
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="input-group">
+            <span class="input-group-text"><i class="fas fa-search"></i></span>
+            <input type="text" class="form-control" id="searchNotes" placeholder="Rechercher une note...">
+        </div>
+    </div>
+    <div class="col-md-4">
+        <select class="form-select" id="filterCourse">
+            <option value="">Tous les cours</option>
+            {% for course in user.student.courses.all %}
+                <option value="{{ course.id }}">{{ course.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-md-4">
+        <select class="form-select" id="sortNotes">
+            <option value="newest">Plus récentes</option>
+            <option value="oldest">Plus anciennes</option>
+            <option value="title">Titre (A-Z)</option>
+        </select>
+    </div>
+</div>
+
+{% if notes %}
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Titre</th>
+                    <th>Cours</th>
+                    <th>Date de création</th>
+                    <th>Contenu</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for note in notes %}
+                <tr>
+                    <td>
+                            {{ note.title }}
+                    </td>     
+                    <td>
+                        <a href="{% url 'course_detail' note.course.id %}" class="badge bg-primary text-decoration-none">
+                            {{ note.course.name }}
+                        </a>
+                    </td>
+                    <td>{{ note.created_at|date:"d/m/Y H:i" }}</td>
+                    <td>
+                        {% if note.content %}
+                            {{ note.content|truncatechars:50 }}
+                        {% else %}
+                            Aucun contenu disponible
+                        {% endif %}
+                    </td>
+
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.course %}&course={{ request.GET.course }}{% endif %}">
+                    <i class="fas fa-chevron-left"></i> Précédent
+                </a>
+            </li>
+            {% else %}
+            <li class="page-item disabled">
+                <span class="page-link"><i class="fas fa-chevron-left"></i> Précédent</span>
+            </li>
+            {% endif %}
+            
+            {% for i in page_obj.paginator.page_range %}
+            {% if page_obj.number == i %}
+            <li class="page-item active">
+                <span class="page-link">{{ i }}</span>
+            </li>
+            {% else %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ i }}{% if request.GET.course %}&course={{ request.GET.course }}{% endif %}">{{ i }}</a>
+            </li>
+            {% endif %}
+            {% endfor %}
+            
+            {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.course %}&course={{ request.GET.course }}{% endif %}">
+                    Suivant <i class="fas fa-chevron-right"></i>
+                </a>
+            </li>
+            {% else %}
+            <li class="page-item disabled">
+                <span class="page-link">Suivant <i class="fas fa-chevron-right"></i></span>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+
+{% else %}
+   
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('searchNotes');
+        const courseFilter = document.getElementById('filterCourse');
+        const sortSelect = document.getElementById('sortNotes');
+        
+        searchInput.addEventListener('input', filterNotes);
+        courseFilter.addEventListener('change', filterNotes);
+        sortSelect.addEventListener('change', sortNotes);
+        
+        function filterNotes() {
+            const searchValue = searchInput.value.toLowerCase();
+            const courseValue = courseFilter.value;
+            const rows = document.querySelectorAll('tbody tr');
+            
+            rows.forEach(row => {
+                const title = row.querySelector('td:first-child').textContent.toLowerCase();
+                const course = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+                const courseId = row.querySelector('td:nth-child(2) a').getAttribute('href').split('/').slice(-2, -1)[0];
+                
+                const matchesSearch = title.includes(searchValue);
+                const matchesCourse = !courseValue || courseId === courseValue;
+                
+                row.style.display = matchesSearch && matchesCourse ? '' : 'none';
+            });
+        }
+        
+        function sortNotes() {
+            const sortValue = sortSelect.value;
+            const tbody = document.querySelector('tbody');
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+            
+            rows.sort((a, b) => {
+                if (sortValue === 'newest') {
+                    const dateA = new Date(a.querySelector('td:nth-child(3)').textContent);
+                    const dateB = new Date(b.querySelector('td:nth-child(3)').textContent);
+                    return dateB - dateA;
+                } else if (sortValue === 'oldest') {
+                    const dateA = new Date(a.querySelector('td:nth-child(3)').textContent);
+                    const dateB = new Date(b.querySelector('td:nth-child(3)').textContent);
+                    return dateA - dateB;
+                } else if (sortValue === 'title') {
+                    const titleA = a.querySelector('td:first-child').textContent.toLowerCase();
+                    const titleB = b.querySelector('td:first-child').textContent.toLowerCase();
+                    return titleA.localeCompare(titleB);
+                }
+            });
+            
+            // Clear and append sorted rows
+            rows.forEach(row => tbody.appendChild(row));
+        }
+    });
+</script>
+{% endblock %}

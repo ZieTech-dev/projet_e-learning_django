@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tableau de bord</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .card {
+            margin-bottom: 20px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .card-header {
+            font-weight: bold;
+        }
+        .dashboard-icon {
+            font-size: 24px;
+            margin-right: 10px;
+        }
+        .table-responsive {
+            overflow-x: auto;
+        }
+        .progress {
+            height: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid py-4">
+        <div class="row">
+            <div class="col-12">
+                <h1 class="mb-4">Tableau de bord</h1>
+                <p class="lead">Bienvenue, {{ student.user.first_name }} {{ student.user.last_name }}</p>
+            </div>
+        </div>
+        
+        <div class="row">
+            <!-- Cours inscrits -->
+            <div class="col-lg-6 mb-4">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <i class="fas fa-book-open dashboard-icon"></i>Mes cours
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Nom du cours</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for course in courses %}
+                                    <tr>
+                                        <td>{{ course.name }}</td>
+                                        <td>
+                                            <a href="{% url 'course_detail' course.id %}" class="btn btn-sm btn-primary">
+                                                <i class="fas fa-eye"></i> Détails
+                                            </a>
+                                            <a href="{% url 'quiz_list' course.id %}" class="btn btn-sm btn-warning">
+                                                <i class="fas fa-tasks"></i> Quiz
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="2" class="text-center">Aucun cours inscrit</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <a href="{% url 'courses' %}" class="btn btn-outline-primary">Voir tous les cours</a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Évaluations récentes -->
+            <div class="col-lg-6 mb-4">
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <i class="fas fa-chart-line dashboard-icon"></i>Évaluations récentes
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Cours</th>
+                                        <th>Note</th>
+                                        <th>Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for evaluation in recent_evaluations %}
+                                    <tr>
+                                        <td>{{ evaluation.course.name }}</td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <span class="me-2">{{ evaluation.score }}/20</span>
+                                                <div class="progress flex-grow-1">
+                                                    <div class="progress-bar {% if evaluation.score >= 14 %}bg-success{% elif evaluation.score >= 10 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                                         role="progressbar" 
+                                                         aria-valuenow="{{ evaluation.score }}" 
+                                                         aria-valuemin="0" 
+                                                         aria-valuemax="20">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>{{ evaluation.date|date:"d/m/Y" }}</td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="3" class="text-center">Aucune évaluation récente</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <a href="{% url 'evaluations' %}" class="btn btn-outline-success">Voir toutes les évaluations</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <!-- Notes récentes -->
+            <div class="col-lg-6 mb-4">
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <i class="fas fa-sticky-note dashboard-icon"></i>Notes récentes
+                    </div>
+                    <div class="card-body">
+                        <div class="list-group">
+                            {% for note in recent_notes %}
+                            <div class="list-group-item list-group-item-action">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h5 class="mb-1">{{ note.title }}</h5>
+                                    <small>{{ note.created_at|date:"d/m/Y" }}</small>
+                                </div>
+                                <p class="mb-1">{{ note.content|truncatechars:100 }}</p>
+                                <small>Cours: {{ note.course.name }}</small>
+                            </div>
+                            {% empty %}
+                            <div class="list-group-item">
+                                <p class="text-center">Aucune note récente</p>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <a href="{% url 'notes' %}" class="btn btn-outline-info mt-3">Voir toutes les notes</a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Factures à payer -->
+            <div class="col-lg-6 mb-4">
+                <div class="card">
+                    <div class="card-header bg-danger text-white">
+                        <i class="fas fa-file-invoice dashboard-icon"></i>Factures à payer
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Montant</th>
+                                        <th>Échéance</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for invoice in upcoming_invoices %}
+                                    <tr>
+                                        <td>{{ invoice.id }}</td>
+                                        <td>{{ invoice.amount }} FCFA</td>
+                                        <td>
+                                            <span class="{% if invoice.is_overdue %}text-danger fw-bold{% endif %}">
+                                                {{ invoice.due_date|date:"d/m/Y" }}
+                                                {% if invoice.is_overdue %}
+                                                <span class="badge bg-danger ms-1">En retard</span>
+                                                {% endif %}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <a href="{% url 'invoice_detail' invoice.id %}" class="btn btn-sm btn-primary">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a href="{% url 'payer_facture' invoice.id %}" class="btn btn-sm btn-success">
+                                                <i class="fas fa-credit-card"></i> Payer
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="4" class="text-center">Aucune facture en attente</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <a href="{% url 'invoices' %}" class="btn btn-outline-danger">Voir toutes les factures</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Custom filter for multiplication in Django template
+            if (typeof django !== 'undefined' && django.template) {
+                django.template.defaultfilters.multiply = function(value, arg) {
+                    return parseFloat(value) * parseFloat(arg);
+                };
+            }
+        });
+    </script>
+</body>
+</html>

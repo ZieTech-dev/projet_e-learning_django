@@ -1,0 +1,162 @@
+{% extends 'base.html' %}
+{% load custom_filters %}
+
+{% block title %}{{ quiz.title }} | EduSystem{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item active" aria-current="page">{{ quiz.title }}</li>
+        </ol>
+    </nav>
+
+    <div class="page-header mb-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1>{{ quiz.title }}</h1>
+            <div>
+                <span class="badge bg-primary me-2">{{ quiz.questions.count }} questions</span>
+                <span class="badge bg-secondary"><i class="far fa-clock me-1"></i>{{ quiz.time_limit }} minutes</span>
+            </div>
+        </div>
+        <p class="lead mt-2">{{ quiz.description }}</p>
+        <h6 class="text-muted">
+            <i class="fas fa-book me-1"></i>Cours: <a href="{% url 'course_detail' quiz.course.id %}">{{ quiz.course.name }}</a>
+        </h6>
+    </div>
+
+    {% if attempt and not attempt.completed_at %}
+        <div class="alert alert-warning">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <i class="fas fa-exclamation-triangle me-2"></i>Vous avez un quiz en cours. Temps restant: <span id="timer">--:--</span>
+                </div>
+                <div>
+                    <a href="{% url 'resume_quiz' attempt.id %}" class="btn btn-warning">Reprendre</a>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    {% if not attempt %}
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Instructions</h5>
+                <ul>
+                    <li>Ce quiz contient {{ quiz.questions.count }} questions.</li>
+                    <li>Vous avez {{ quiz.time_limit }} minutes pour compléter le quiz.</li>
+                    <li>Chaque question a une seule réponse correcte.</li>
+                    <li>Une fois terminé, vous verrez immédiatement votre score.</li>
+                </ul>
+
+                <form action="{% url 'start_quiz' quiz.id %}" method="post" class="mt-4">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="fas fa-play me-2"></i>Commencer le quiz
+                    </button>
+                </form>
+            </div>
+        </div>
+    {% else %}
+        <form id="quizForm" method="post" action="{% url 'submit_quiz' attempt.id %}">
+            {% csrf_token %}
+            <input type="hidden" name="remaining_time" id="remainingTime" value="">
+            
+            {% for question in quiz.questions.all %}
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h5 class="mb-0">Question {{ forloop.counter }}</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-4">{{ question.text }}</p>
+                        
+                        <div class="choices">
+                            {% for choice in question.choices.all %}
+                                <div class="form-check mb-2">
+                                    <input 
+                                        class="form-check-input" 
+                                        type="radio" 
+                                        name="question_{{ question.id }}" 
+                                        id="choice_{{ choice.id }}" 
+                                        value="{{ choice.id }}"
+                                        {% if user_answers and user_answers|get_item:question.id == choice.id %}checked{% endif %}
+                                    >
+                                    <label class="form-check-label" for="choice_{{ choice.id }}">
+                                        {{ choice.text }}
+                                    </label>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+            
+            <div class="d-flex justify-content-between align-items-center mt-4 mb-5">
+                <button type="button" class="btn btn-outline-secondary" id="saveProgress">
+                    <i class="fas fa-save me-1"></i>Sauvegarder pour plus tard
+                </button>
+                <button type="submit" class="btn btn-success btn-lg">
+                    <i class="fas fa-check-circle me-1"></i>Terminer le quiz
+                </button>
+            </div>
+        </form>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                // Quiz timer
+                const startTime = new Date('{{ attempt.started_at|date:"c" }}');
+                const timeLimit = {{ quiz.time_limit }} * 60 * 1000; // convert to milliseconds
+                const endTime = new Date(startTime.getTime() + timeLimit);
+                
+                function updateTimer() {
+                    const now = new Date();
+                    const diff = endTime - now;
+                    
+                    if (diff <= 0) {
+                        document.getElementById('timer').textContent = "00:00";
+                        document.getElementById('quizForm').submit();
+                        return;
+                    }
+                    
+                    const minutes = Math.floor(diff / 60000);
+                    const seconds = Math.floor((diff % 60000) / 1000);
+                    
+                    document.getElementById('timer').textContent = 
+                        (minutes < 10 ? '0' : '') + minutes + ':' + 
+                        (seconds < 10 ? '0' : '') + seconds;
+                    
+                    document.getElementById('remainingTime').value = diff;
+                }
+                
+                setInterval(updateTimer, 1000);
+                updateTimer();
+                
+                // Save progress
+                document.getElementById('saveProgress').addEventListener('click', function() {
+                    const formData = new FormData(document.getElementById('quizForm'));
+                    formData.append('action', 'save');
+                    
+                    fetch('{% url "save_quiz_progress" attempt.id %}', {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert('Progression sauvegardée avec succès!');
+                        } else {
+                            alert('Erreur lors de la sauvegarde: ' + data.error);
+                        }
+                    })
+                    .catch(error => {
+                        alert('Erreur réseau: ' + error.message);
+                    });
+                });
+            });
+        </script>
+    {% endif %}
+</div>
+{% endblock %}

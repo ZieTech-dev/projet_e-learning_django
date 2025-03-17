@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+{% block title %}Discussions | EduSystem{% endblock %}
+{% block content %}
+<div class="container py-4">
+    <div class="page-header d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="fas fa-comments me-2"></i>Discussions</h1>
+        <div>
+            <select class="form-select" id="filterCourse">
+                <option value="">Tous les cours</option>
+                {% for course in user.student.courses.all %}
+                    <option value="{{ course.id }}">{{ course.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Nouvelle discussion</h5>
+                    <form action="{% url 'create_discussion' %}" method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="discussionTitle" class="form-label">Titre</label>
+                            <input type="text" class="form-control" id="discussionTitle" name="title" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="discussionCourse" class="form-label">Cours</label>
+                            <select class="form-select" id="discussionCourse" name="course_id" required>
+                                <option value="">Sélectionner un cours</option>
+                                {% for course in user.student.courses.all %}
+                                    <option value="{{ course.id }}">{{ course.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="discussionMessage" class="form-label">Message initial</label>
+                            <textarea class="form-control" id="discussionMessage" name="message" rows="3" required></textarea>
+                        </div>
+                        <div class="text-end">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-plus-circle me-1"></i>Créer discussion
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="discussions-list">
+        {% for discussion in discussions %}
+        <div class="card mb-3" data-course="{{ discussion.course.id }}">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h5 class="card-title mb-0">
+                        <a href="{% url 'discussion_detail' discussion.id %}" class="text-decoration-none">
+                            {{ discussion.title }}
+                        </a>
+                    </h5>
+                    <span class="badge bg-primary">{{ discussion.messages.count }} messages</span>
+                </div>
+                <p class="card-text text-muted mb-2">
+                    <i class="fas fa-book me-1"></i>{{ discussion.course.name }}
+                </p>
+                <div class="d-flex justify-content-between align-items-center">
+                    <small class="text-muted">
+                        <i class="fas fa-user me-1"></i>{{ discussion.created_by.user.username }} - 
+                        <i class="far fa-clock me-1"></i>{{ discussion.created_at|date:"d/m/Y H:i" }}
+                    </small>
+                    <a href="{% url 'discussion_detail' discussion.id %}" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-reply me-1"></i>Participer
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i>Aucune discussion n'a été créée pour le moment.
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const filterCourse = document.getElementById('filterCourse');
+        
+        filterCourse.addEventListener('change', function() {
+            const courseId = this.value;
+            const discussionCards = document.querySelectorAll('[data-course]');
+            
+            discussionCards.forEach(card => {
+                if (courseId === '' || card.dataset.course === courseId) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

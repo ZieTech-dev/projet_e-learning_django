@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+
+{% block title %}Cours disponibles | EduSystem{% endblock %}
+
+{% block content %}
+<div class="page-header d-flex justify-content-between align-items-center">
+    <h1><i class="fas fa-book me-2"></i>Cours disponibles</h1>
+    <div>
+        <a href="#" class="btn btn-primary">
+            <i class="fas fa-filter me-1"></i>Filtrer
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    {% for course in courses %}
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">{{ course.name }}</h5>
+                <span class="badge bg-light text-dark">{{ course.students.count }} étudiants</span>
+            </div>
+            <div class="card-body">
+                <p class="card-text">{{ course.description|truncatechars:150 }}</p>
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <span class="badge bg-primary">{{ course.quizzes.count }} quiz</span>
+                        <span class="badge bg-success">{{ course.notes.count }} notes</span>
+                    </div>
+                    <a href="{% url 'course_detail' course.id %}" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-info-circle me-1"></i>Détails
+                    </a>
+                </div>
+            </div>
+            <div class="card-footer bg-white">
+                <div class="progress" style="height: 5px;">
+                    {% if user.student in course.students.all %}
+                    <div class="progress-bar bg-success" role="progressbar" style="width: 100%"></div>
+                    {% else %}
+                    <div class="progress-bar bg-warning" role="progressbar" style="width: 0%"></div>
+                    {% endif %}
+                </div>
+                <div class="d-flex justify-content-between align-items-center mt-2">
+                    {% if user.student in course.students.all %}
+                    <small class="text-success"><i class="fas fa-check-circle me-1"></i>Inscrit</small>
+                    {% else %}
+                    <small class="text-muted">Non inscrit</small>
+                    {% endif %}
+                    <div>
+                        {% if user.student in course.students.all %}
+
+                        {% else %}
+                        <a href="#" class="btn btn-sm btn-outline-success">
+                            <i class="fas fa-plus me-1"></i>S'inscrire
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i>Aucun cours disponible pour le moment.
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<nav aria-label="Page navigation">
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">
+                <i class="fas fa-chevron-left"></i> Précédent
+            </a>
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+            <span class="page-link"><i class="fas fa-chevron-left"></i> Précédent</span>
+        </li>
+        {% endif %}
+        
+        {% for i in page_obj.paginator.page_range %}
+        {% if page_obj.number == i %}
+        <li class="page-item active">
+            <span class="page-link">{{ i }}</span>
+        </li>
+        {% else %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ i }}">{{ i }}</a>
+        </li>
+        {% endif %}
+        {% endfor %}
+        
+        {% if page_obj.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.next_page_number }}">
+                Suivant <i class="fas fa-chevron-right"></i>
+            </a>
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+            <span class="page-link">Suivant <i class="fas fa-chevron-right"></i></span>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endblock %}

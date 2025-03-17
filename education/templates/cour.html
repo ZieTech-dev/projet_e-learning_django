@@ -1,0 +1,29 @@
+<!-- templates/etudiant/cours.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="card shadow">
+    <div class="card-header bg-primary text-white">
+        <h2 class="text-center">Liste des Cours</h2>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            {% for cours in cours %}
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 shadow">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ cours.titre }}</h5>
+                        <p class="card-text">{{ cours.description }}</p>
+                        <a href="{% url 'participer_discussion' cours.id %}" class="btn btn-primary">Participer à la discussion</a>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12">
+                <p class="text-center">Aucun cours disponible.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

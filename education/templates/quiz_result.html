@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block title %}Résultats du Quiz | EduSystem{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'quiz_detail' attempt.quiz.id %}">{{ attempt.quiz.title }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Résultats</li>
+        </ol>
+    </nav>
+
+    <div class="page-header mb-4">
+        <h1>Résultats du Quiz</h1>
+        <p class="lead">{{ attempt.quiz.description }}</p>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Votre score</h5>
+            <p class="display-4">{{ evaluation.score }}%</p>
+            <p class="text-muted">Vous avez répondu correctement à {{ attempt.correct_answers_count }} sur {{ attempt.quiz.questions.count }} questions.</p>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">Détails des réponses</h5>
+            {% for answer in attempt.student_answers.all %}
+                <div class="mb-4">
+                    <p class="mb-2"><strong>Question :</strong> {{ answer.question.text }}</p>
+                    <p class="mb-2"><strong>Votre réponse :</strong> {{ answer.selected_choice.text }}</p>
+                    <p class="mb-2">
+                        <strong>Résultat :</strong>
+                        {% if answer.selected_choice.is_correct %}
+                            <span class="text-success">Correct</span>
+                        {% else %}
+                            <span class="text-danger">Incorrect</span>
+                        {% endif %}
+                    </p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
